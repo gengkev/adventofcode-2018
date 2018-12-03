@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
 import sys
+import re
 from collections import Counter, defaultdict, deque
 from itertools import permutations, combinations, product
+
+def parse_ints(text):
+    "All the integers anywhere in text."
+    return [int(x) for x in re.findall(r'\d+', text)]
 
 def parse_claim(line):
     line = line.split()
@@ -12,7 +17,8 @@ def parse_claim(line):
     return d, left, top, width, height
 
 def main(A):
-    A = [parse_claim(line) for line in A]
+    #A = [parse_claim(line) for line in A]
+    A = [parse_ints(line) for line in A]
     grid = defaultdict(int)
     for claim in A:
         d, l, t, w, h = claim

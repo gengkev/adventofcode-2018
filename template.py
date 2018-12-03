@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 
+import re
 import sys
 from collections import Counter, defaultdict, deque
 from itertools import permutations, combinations, product
 
+def parse_ints(text):
+    "All the integers anywhere in text."
+    return [int(x) for x in re.findall(r'\d+', text)]
+
+
 def main(A):
-    A = list(map(int, A))
+    #A = [line.split() for line in A]
+    #A = [int(line) for line in A]
+    #A = [parse_ints(line) for line in A]
     print('Part 1', sum(A))
 
 
