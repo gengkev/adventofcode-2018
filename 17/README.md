@@ -4,8 +4,13 @@ in pypy3 if the call to `print_grid()` is removed :D
 
 The basic idea is that the `fill_water` fills water starting at a source
 position. It finds the base that the water will fall to, then checks if the
-water is bounded at that point. If so, it adds the water positions to the
-grid. Rinse and repeat.
+water is bounded on the left/right at that y-coordinate. If so, it adds the
+water positions to the grid. Rinse and repeat, until the water is no longer
+bounded.
+
+When the water is no longer bounded, it will overflow to the left/right,
+which will generate new start positions. Those are added to a queue, and
+my code keeps processing so long as there are new start positions.
 
 The first time I got stuck was when I needed to backtrack upwards. In the
 code this happens when the start-position has the same y-coordinate as
