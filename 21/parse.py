@@ -7,10 +7,6 @@ from itertools import permutations, combinations, product
 
 is_sample = False
 
-def parse_ints(text):
-    "All the integers anywhere in text."
-    return [int(x) for x in re.findall(r'-?\d+', text)]
-
 NUM_REGS = 6
 
 ARITH_OPS = {
@@ -76,16 +72,23 @@ def parse_line(line):
 
 def main(A):
     A = A.splitlines()
-    ip_reg = parse_ints(A[0])[0]
+
+    # Extract ip_reg, parse rest of lines as instructions
+    ip_reg = int(A[0].split()[1])
     A = A[1:]
     A = [parse_line(line) for line in A]
 
+    # Set initial values of registers here
+    initial_values = [0 for _ in range(NUM_REGS)]
+
+    # Begin code generation!
     print('#include <stdio.h>')
     print('#include <stdbool.h>')
     print()
     print('int main(void) {')
     for i in range(NUM_REGS):
-        print('  long long reg{} = 0;'.format(i))
+        print('  long long reg{} = {};'.format(
+            i, generate_str('i', initial_values[i])))
     print()
     print('  bool done = false;')
     print('  while (!done) {')
@@ -95,7 +98,14 @@ def main(A):
         linestr = generate_line(i, *line)
         print('    case {}:'.format(i))
         print('      {}'.format(linestr))
-        print('      break;')
+
+        # Only break if we have to; otherwise fallthrough
+        if 'reg{}'.format(ip_reg) in linestr:
+            print('      break;')
+        else:
+            print('      reg{}++;'.format(ip_reg))
+
+        print()
 
     print('    default:')
     print('      printf("Out of range: %lld\\n", reg{});'.format(ip_reg))
