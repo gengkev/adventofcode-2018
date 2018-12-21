@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import re
-import sys
-from collections import Counter, defaultdict, deque
-from itertools import permutations, combinations, product
+'''
+An ElfCode to C transpiler.
+Usage: python3 parse.py <elfcode_file>
+The C program is printed to standard out.
+'''
 
-is_sample = False
+import sys
 
 NUM_REGS = 6
 
@@ -100,7 +101,7 @@ def main(A):
         print('      {}'.format(linestr))
 
         # Only break if we have to; otherwise fallthrough
-        if 'reg{}'.format(ip_reg) in linestr:
+        if linestr.startswith('reg{}'.format(ip_reg)):
             print('      break;')
         else:
             print('      reg{}++;'.format(ip_reg))
@@ -118,9 +119,9 @@ def main(A):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) >= 2 and sys.argv[1].startswith('s'):
-        A = open('sample.txt').read()
-        is_sample = True
-    else:
-        A = open('input.txt').read()
+    if len(sys.argv) < 2:
+        print('Usage: {} <elfcode_file>'.format(sys.argv[0]),
+                file=sys.stderr)
+        sys.exit(1)
+    A = open(sys.argv[1]).read()
     main(A)
