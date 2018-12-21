@@ -1,4 +1,5 @@
 CC=gcc
-CFLAGS=-O2 -Wall -Wextra
-all: solve
+CFLAGS=-O3 -Wall -Wextra
+all: solve parsed
 solve: solve.c
+parsed: parsed.c
