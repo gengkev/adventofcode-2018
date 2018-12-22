@@ -76,6 +76,7 @@ def main(A):
 
     # Extract ip_reg, parse rest of lines as instructions
     ip_reg = int(A[0].split()[1])
+    ip_reg_var = generate_str('r', ip_reg)
     A = A[1:]
     A = [parse_line(line) for line in A]
 
@@ -88,12 +89,13 @@ def main(A):
     print()
     print('int main(void) {')
     for i in range(NUM_REGS):
-        print('  long long reg{} = {};'.format(
-            i, generate_str('i', initial_values[i])))
+        print('  long long {} = {};'.format(
+            generate_str('r', i),
+            generate_str('i', initial_values[i])))
     print()
     print('  bool done = false;')
     print('  while (!done) {')
-    print('    switch (reg{}) {{'.format(ip_reg))
+    print('    switch ({}) {{'.format(ip_reg_var))
 
     for i, line in enumerate(A):
         linestr = generate_line(i, *line)
@@ -101,18 +103,18 @@ def main(A):
         print('      {}'.format(linestr))
 
         # Only break if we have to; otherwise fallthrough
-        if linestr.startswith('reg{}'.format(ip_reg)):
+        if linestr.startswith(ip_reg_var):
             print('      break;')
         else:
-            print('      reg{}++;'.format(ip_reg))
+            print('      {}++;'.format(ip_reg_var))
 
         print()
 
     print('    default:')
-    print('      printf("Out of range: %lld\\n", reg{});'.format(ip_reg))
+    print('      printf("Out of range: %lld\\n", {});'.format(ip_reg_var))
     print('      done = true;')
     print('    }')
-    print('    reg{}++;'.format(ip_reg));
+    print('    {}++;'.format(ip_reg_var));
     print('  }')
     print('  return 0;')
     print('}')

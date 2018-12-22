@@ -61,7 +61,7 @@ def generate_line(lineno, op, a, b, c):
     cstr = generate_str('r', c)
 
     rhs = '{} {} {}'.format(astr, opstr, bstr)
-    return '{} = {};'.format(cstr, rhs.strip())
+    return cstr, rhs.strip()
 
 
 def parse_line(line):
@@ -76,6 +76,7 @@ def main(A):
 
     # Extract ip_reg, parse rest of lines as instructions
     ip_reg = int(A[0].split()[1])
+    ip_reg_var = generate_str('r', ip_reg)
     A = A[1:]
     A = [parse_line(line) for line in A]
 
@@ -88,27 +89,46 @@ def main(A):
     print()
     print('int main(void) {')
     for i in range(NUM_REGS):
-        print('  long long reg{} = {};'.format(
-            i, generate_str('i', initial_values[i])))
+        print('  long long {} = {};'.format(
+            generate_str('r', i),
+            generate_str('i', initial_values[i])))
     print()
 
     for i, line in enumerate(A):
-        linestr = generate_line(i, *line)
-        print('line{}:'.format(i))
-        print('  {}'.format(linestr))
-        print('  reg{}++;'.format(ip_reg))
+        lhs, rhs = generate_line(i, *line)
 
-        # Only break if we have to; otherwise fallthrough
-        if linestr.startswith('reg{}'.format(ip_reg)):
-            print('  goto jump;')
+        # On RHS, ip_reg can be substituted
+        rhs = rhs.replace(ip_reg_var, generate_str('i', i))
+
+        label = 'line{}:'.format(i)
+        print('{:<10}'.format(label), end='')
+
+        # If LHS is ip_reg, we need to jump
+        if lhs == ip_reg_var:
+            if 'reg' in rhs:
+                print('{} = {} + 1;'.format(lhs, rhs))
+                print('          goto jump;')
+            else:
+                # Immediate jump target
+                target = eval(rhs.replace('LL', '')) + 1
+                if 0 <= target < len(A):
+                    print('goto line{};'.format(target))
+                else:
+                    print('printf("Out of range: {}\\n");'.format(target))
+                    print('          return 0;')
             print()
 
+        # Normal LHS <- RHS assignment
+        else:
+            print('{} = {};'.format(lhs, rhs))
+
     print('jump:')
-    print('  switch (reg{}) {{'.format(ip_reg))
+    print('  switch ({}) {{'.format(ip_reg_var))
     for i, _ in enumerate(A):
-        print('  case {0}: goto line{0};'.format(i))
+        case_stmt = 'case {}:'.format(i)
+        print('  {:<10}goto line{};'.format(case_stmt, i))
     print('  default:')
-    print('    printf("Out of range: %lld\\n", reg{});'.format(ip_reg))
+    print('    printf("Out of range: %lld\\n", {});'.format(ip_reg_var))
     print('    break;')
     print('  }')
     print()
