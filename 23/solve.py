@@ -66,27 +66,24 @@ def main(A):
             elif mine == best_score:
                 best_points.append(pos)
 
-        print('best_score', best_score)
+        #print('best_score', best_score)
 
         if best_score > overall_best_score:
             overall_best_score = best_score
-        elif best_score < overall_best_score:
-            #print("can't do better than overall, returning")
-            return
 
         if old_skip == 1:
             #print('returning from try_area, skip == 1')
             return
 
         radius = old_skip
-        skip = max(radius // 10, 1)
+        skip = max(radius // 2, 1)  # smaller divisor is faster!!
 
         # Only examine one point...??
         # They are all tied, but this is a bit questionable
         # Seems to work though, even when randomly picked!
         for guess in [random.choice(best_points)]:
             area = product(*[
-                range(guess[i] - radius, guess[i] + radius + 1, skip)
+                range(guess[i] - radius, guess[i] + radius + skip + 1, skip)
                 for i in range(3)
             ])
             #print('try_area, radius={}, skip={}, guess={}'.format(
